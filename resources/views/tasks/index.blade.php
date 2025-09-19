@@ -1,6 +1,7 @@
 @extends('layouts.app')
 @section('content')
 <div class="card">
+    <!--project filter dropdown-->
     <form method="GET" class="project-select" style="display:flex; gap:8px; align-items:center;">
         <label class="small">Project:</label>
         <select name="project_id" onchange="this.form.submit()">
@@ -11,9 +12,11 @@
                 </option>
             @endforeach
         </select>
+        <!-- toggle new project form-->
         <a href="#" id="new-project-toggle" class="btn" style="margin-left:auto;"> + New Project</a>
     </form>
 
+    <!-- inline new project form, it is hidden by preventDefault-->
     <form id="new-project-form" method="post" action="{{ route('projects.store') }}" style="display:none; margin-top:12px;">
         @csrf
         <input type="text" name="name" placeholder="Project Name" required>
@@ -34,7 +37,7 @@
     </select>
     <button class="btn primary" type="submit">Add Task</button>
 </form>
-
+<!-- task list container-->
 <div id="task-list">
     @if($tasks->isEmpty())
         <p class="small">No Tasks Yet</p>
@@ -42,15 +45,18 @@
         <div id="sortable-list">
             @foreach ($tasks as $task)
                 <div class="task" data-id="{{ $task->id }}">
+                    <!--left side: priority and name-->
                     <div class="left">
                         <div class="priority">{{ $task->priority }}</div>
                         <div>
                             <div class="name">{{ $task->name }}</div>
                             <div class="small">
+                                <!-- display project name if assigned-->
                                 {{ $task->project?->name ?? 'No project' }} • created {{ $task->created_at->diffForHumans() }}
                             </div>
                         </div>
                     </div>
+                    <!-- task controls for edit and delete-->
                     <div class="controls">
                         <a href="{{ route('tasks.edit', $task) }}" class="btn">Edit</a>
                         <form method="POST" action="{{ route('tasks.destroy', $task) }}" class="inline" onsubmit="return confirm('Delete task?')">
@@ -71,7 +77,7 @@
 @endsection
 
 @push('scripts')
-
+<!-- includes Sortable.js for drag and drop functinality-->
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
 <script>
@@ -80,14 +86,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const list = document.getElementById('sortable-list');
 
     if (list) {
+       // initialize SortableJS
         new Sortable(list, {
             animation: 150,
             handle: '.task',
             onEnd: function() {
+                //get ordered task IDs
                 const ids = Array.from(list.querySelectorAll('.task')).map(el => el.dataset.id);
+                //get current project filter
                 const projectSelect = document.querySelector('select[name="project_id"]');
                 const project_id = projectSelect ? projectSelect.value : null;
 
+                // send AJAX to reorder tasks
                 fetch('{{ route("tasks.reorder") }}', {
                     method: 'POST',
                     headers: {
@@ -100,6 +110,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(r => r.json())
                 .then(data => {
                     if (data.status === 'ok') {
+                        // update priority numbers in the DOM
                         Array.from(list.querySelectorAll('.task .priority'))
                              .forEach((el, idx) => el.textContent = idx + 1);
                     } else {
@@ -111,6 +122,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Toggle visibility of new project form
     const toggleBtn = document.getElementById('new-project-toggle');
     const newProjectForm = document.getElementById('new-project-form');
 
