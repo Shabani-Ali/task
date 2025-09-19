@@ -7,16 +7,30 @@ use Illuminate\Http\Request;
 
 class ProjectController extends Controller
 {
+    /**
+     * Display a listing of all projects
+     * Projects are ordered alphabeticcaly by name
+     */
     public function index(){
-        $orojects=Project::orderBy('name')->get();
+        $projects=Project::orderBy('name')->get();
+
+        // pass the lsit of projects to the index view
         return view('projects.index', compact('projects'));
 
     }
 
-    public function strore(Request $request){
+    /**
+     * store newly cretaed project in the database and 
+     * validates the request to ensure project name is provided
+     */
+    public function store(Request $request){
+
+        // validate input
         $validated=$request->validate([
             'name'=>'required|string|max:255'
         ]);
+
+        // create project
         Project::create($validated);
         return redirect()->route('projects.index')->with('success','Project created');
 
@@ -27,15 +41,19 @@ class ProjectController extends Controller
     }
 
     public function update(Request $request, Project $project){
+        //validate input
         $validate=$request->validate([
             'name'=>'required|string|max:255'
         ]);
+
+        // update project
         $project->update($validate);
         return redirect()->route('projects.index')->with('success','Project updated');
 
     }
 
-    public function destry(Project $project){
+    public function destroy(Project $project){
+        //delete project
         $project->delete();
         return redirect()-> route('projects.index')->with('success', 'Project deleted ');
     }

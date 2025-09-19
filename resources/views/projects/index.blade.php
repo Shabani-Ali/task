@@ -1,4 +1,4 @@
-@extends('layout.app')
+@extends('layouts.app')
 @section('content')
 <div class="card">
     <h2>Projects</h2>
@@ -6,7 +6,7 @@
     <p><strong>{{session('success')}}</strong></p>
     @endif
 
-    <from action="{{ route('projects.strore')}}" method="POST" style="margin-bottom:16px;">
+    <from action="{{ route('projects.store')}}" method="POST" style="margin-bottom:16px;">
         @csrf
         <input type="text" name="name" placeholder="New Project name" required>
         <button type="submit" class="btn-primary"> Add Project</button>
@@ -23,7 +23,7 @@
             <tr style="border-top:1px solid #ddd;">
                 <td style="padding: 8px;">{{$project->name}}</td>
                 <td style="padding: 8px; text-align:right;">
-                    <a href="{{route('project.edit', $project)}}" class="btn">
+                    <a href="{{route('projects.edit', $project)}}" class="btn">Edit</a>
                         <form action="{{route('projects.destroy', $project)}}" method="POST" style="display:inline" onsubmit="return confirm('Delete this project?')">
                             @csrf
                             @method('DELETE')
